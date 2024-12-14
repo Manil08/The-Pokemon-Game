@@ -32,6 +32,8 @@ const background = new Sprite({
     image: image
 })
 
+let keyStack = []
+
 const keys = {
     w: {
         pressed: false
@@ -48,7 +50,17 @@ const keys = {
 }
 
 function animate() {
+
     window.requestAnimationFrame(animate)
+
+    while(keyStack.length!=0){
+        if(keyStack[keyStack.length-1] === 'w' && !keys.w.pressed) keyStack.pop()
+        else if (keyStack[keyStack.length-1] === 'd' && !keys.d.pressed) keyStack.pop()
+        else if (keyStack[keyStack.length-1] === 'a' && !keys.a.pressed) keyStack.pop()
+        else if (keyStack[keyStack.length-1] === 's' && !keys.s.pressed) keyStack.pop()
+        else break
+    }
+
     background.draw()
     c.drawImage(
         playerImage,
@@ -62,10 +74,12 @@ function animate() {
         playerImage.height
     )
 
-    if(keys.w.pressed) background.position.y += 2
-    else if (keys.d.pressed) background.position.x -= 2
-    else if (keys.a.pressed) background.position.x += 2
-    else if (keys.s.pressed) background.position.y -= 2
+    if(keyStack.length != 0){
+        if(keyStack[keyStack.length-1] === 'w') background.position.y += 2
+        else if (keyStack[keyStack.length-1] === 'd') background.position.x -= 2
+        else if (keyStack[keyStack.length-1] === 'a') background.position.x += 2
+        else if (keyStack[keyStack.length-1] === 's') background.position.y -= 2   
+    }
 }
 
 animate()
@@ -74,15 +88,19 @@ window.addEventListener('keydown', (e) =>{
     switch (e.key){
         case 'w':
             keys.w.pressed = true
+            if(keyStack.length != 0 || keyStack[keyStack.length-1] != 'w') keyStack.push('w');
             break
         case 'a':
             keys.a.pressed = true
+            if(keyStack.length != 0 || keyStack[keyStack.length-1] != 'a') keyStack.push('a');
             break
         case 's':
             keys.s.pressed = true
+            if(keyStack.length != 0 || keyStack[keyStack.length-1] != 's') keyStack.push('s');
             break
         case 'd':
             keys.d.pressed = true
+            if(keyStack.length != 0 || keyStack[keyStack.length-1] != 'd') keyStack.push('d');
             break
     }
     console.log(keys)
