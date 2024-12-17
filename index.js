@@ -1,9 +1,12 @@
 const canvas = document.querySelector('canvas')
 const c = canvas.getContext('2d')
 
+let selectedMap = Route33
+let selectedPlayer = Player1
+
 const offset = {
-    x: -256,
-    y: -24
+    x: selectedMap.mapOffset.x,
+    y: selectedMap.mapOffset.y
 }
 
 canvas.width = 768
@@ -11,7 +14,7 @@ canvas.height = 432
 
 const boundaries = []
 
-collisions.forEach((row, i) => {
+selectedMap.collisions.forEach((row, i) => {
     row.forEach((symbol, j) => {
         if(symbol === 1){
             boundaries.push(
@@ -29,23 +32,8 @@ collisions.forEach((row, i) => {
 c.fillStyle = 'white'
 c.fillRect(0, 0, canvas.width, canvas.height)
 
-const image = new Image()
-image.src = './img/Route-33.png'
-
-const foregroundImage = new Image()
-foregroundImage.src = './img/Route-33-top.png'
-
-const playerDownImage = new Image()
-playerDownImage.src = './img/playerDown.png'
-
-const playerUpImage = new Image()
-playerUpImage.src = './img/playerUp.png'
-
-const playerLeftImage = new Image()
-playerLeftImage.src = './img/playerLeft.png'
-
-const playerRightImage = new Image()
-playerRightImage.src = './img/playerRight.png'
+const backgroundImage = selectedMap.backgroundImage
+const foregroundImage = selectedMap.foregroundImage
 
 const blackBG = new Image()
 blackBG.src = './img/Black_BG.png'
@@ -53,21 +41,25 @@ blackBG.src = './img/Black_BG.png'
 let playerMidX = canvas.width/2 - 64/4
 let playerMidY = canvas.height/2 - 32/2
 
+let playerX = selectedMap.playerOffset.x
+let playerY = selectedMap.playerOffset.y
+if(playerX == -1000) playerX = playerMidX
+if(playerY == -1000) playerY = playerMidY
+
 const player = new Sprite({
     position : {
-        x: 416,
-        // x: playerMidX, // player image width / 4
-        y: playerMidY // player image height / 2
+        x: playerX,
+        y: playerY
     },
-    image: playerDownImage,
+    image: selectedPlayer.image.down,
     frames: {
         max: 4
     },
     sprites: {
-        up: playerUpImage,
-        down: playerDownImage,
-        left: playerLeftImage,
-        right: playerRightImage
+        up: selectedPlayer.image.up,
+        down: selectedPlayer.image.down,
+        left: selectedPlayer.image.left,
+        right: selectedPlayer.image.right
     } 
 })
 
@@ -84,7 +76,7 @@ const background = new Sprite({
         x: offset.x,
         y: offset.y
     },
-    image: image
+    image: backgroundImage
 })
 
 const foreground = new Sprite({
@@ -113,8 +105,8 @@ const keys = {
 }
 
 let invert = {
-    y: false,
-    x: true,
+    x: selectedMap.inversions.x,
+    y: selectedMap.inversions.y,
 }
 
 const movables = [background, ...boundaries, foreground]
@@ -128,8 +120,6 @@ function rectangularCollision({rectangle1, rectangle2}){
         rectangle1.position.y + rectangle1.height > rectangle2.position.y
     )
 }
-
-// let fr=0
 
 function animate() {
 
@@ -145,14 +135,7 @@ function animate() {
 
     blackBackground.draw()
     background.draw()
-    // boundaries.forEach(boundary => {
-    //     boundary.draw()
-    //     if(rectangularCollision({rectangle1: player, rectangle2: boundary})){
-    //         console.log('Collisionnnnnnnnnnn')
-    //     }
-    // })
     player.draw()
-    // console.log(player.frames.val)
     foreground.draw()
 
 
@@ -161,12 +144,6 @@ function animate() {
 
     if(!invert.y && (background.position.y === canvas.height - background.height || background.position.y === 0)) invert.y = true
     else if(invert.y && player.position.y === playerMidY) invert.y = false
-
-    // if(fr>10){
-    //     console.log('frames passed')
-    //     fr=0
-    // }
-    // else fr++
 
     player.moving = false
 
@@ -184,7 +161,6 @@ function animate() {
                     x: boundary.position.x,
                     y: boundary.position.y + 2
                 }}})){
-                    // console.log('Collisionnnnnnnnnnn')
                     player.moving = false
                     break
                 }
@@ -204,7 +180,6 @@ function animate() {
                     x: boundary.position.x - 2,
                     y: boundary.position.y
                 }}})){
-                    // console.log('Collisionnnnnnnnnnn')
                     player.moving = false
                     break
                 }
@@ -224,7 +199,6 @@ function animate() {
                     x: boundary.position.x + 2,
                     y: boundary.position.y
                 }}})){
-                    // console.log('Collisionnnnnnnnnnn')
                     player.moving = false
                     break
                 }
@@ -244,7 +218,6 @@ function animate() {
                     x: boundary.position.x,
                     y: boundary.position.y - 2
                 }}})){
-                    // console.log('Collisionnnnnnnnnnn')
                     player.moving = false
                     break
                 }
