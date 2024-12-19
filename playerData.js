@@ -16,5 +16,6 @@ const Player1 = {
         down : playerDownImage,
         right : playerRightImage,
         left : playerLeftImage
-    }
+    },
+    playerFrameSpeed : 1
 }

@@ -121,113 +121,189 @@ function rectangularCollision({rectangle1, rectangle2}){
     )
 }
 
+let frame = 0
+let frameSpeed = selectedPlayer.playerFrameSpeed
+
+let moves = {
+    up: 0,
+    down: 0,
+    left: 0,
+    right: 0
+}
+
+let face = {
+    up: false,
+    down: true,
+    right: false,
+    left: false
+}
+
 function animate() {
 
     window.requestAnimationFrame(animate)
 
-    while(keyStack.length!=0){
-        if(keyStack[keyStack.length-1] === 'w' && !keys.w.pressed) keyStack.pop()
-        else if (keyStack[keyStack.length-1] === 'd' && !keys.d.pressed) keyStack.pop()
-        else if (keyStack[keyStack.length-1] === 'a' && !keys.a.pressed) keyStack.pop()
-        else if (keyStack[keyStack.length-1] === 's' && !keys.s.pressed) keyStack.pop()
-        else break
+    if(frame === 0){
+
+        blackBackground.draw()
+        background.draw()
+        player.draw()
+        foreground.draw()
+
+        if(!invert.x && (background.position.x === canvas.width - background.width || background.position.x === 0)) invert.x = true
+        else if(invert.x && player.position.x === playerMidX) invert.x = false
+
+        if(!invert.y && (background.position.y === canvas.height - background.height || background.position.y === 0)) invert.y = true
+        else if(invert.y && player.position.y === playerMidY) invert.y = false
+
+        if(moves.up == 0 && moves.down == 0 && moves.right == 0 && moves.left == 0){
+
+            while(keyStack.length!=0){
+                if(keyStack[keyStack.length-1] === 'w' && !keys.w.pressed) keyStack.pop()
+                else if (keyStack[keyStack.length-1] === 'd' && !keys.d.pressed) keyStack.pop()
+                else if (keyStack[keyStack.length-1] === 'a' && !keys.a.pressed) keyStack.pop()
+                else if (keyStack[keyStack.length-1] === 's' && !keys.s.pressed) keyStack.pop()
+                else break
+            }
+
+            player.moving = false
+
+            if(keyStack.length != 0){
+
+                player.moving = true
+
+                if(keyStack[keyStack.length-1] === 'w'){
+
+                    player.image = player.sprites.up
+                    
+                    if(face.up){
+                        for(let i=0; i<boundaries.length; i++){
+                            const boundary = boundaries[i]
+                            if(rectangularCollision({rectangle1: player, rectangle2: {...boundary, position: {
+                                x: boundary.position.x,
+                                y: boundary.position.y + 2
+                            }}})){
+                                player.moving = false
+                                break
+                            }
+                        }
+                        if(player.moving){
+                            if(!invert.y) movables.forEach(movable => {movable.position.y += 2})
+                            else nonmovables.forEach(nonmovable => {nonmovable.position.y -= 2})
+                            moves.up += 2
+                        }
+                    }
+                    else{
+                        face = { up: false, down: false, right: false, left: false };
+                        face.up = true
+                    }
+
+                }
+                else if (keyStack[keyStack.length-1] === 'd') {
+
+                    player.image = player.sprites.right
+
+                    if(face.right){
+                        for(let i=0; i<boundaries.length; i++){
+                            const boundary = boundaries[i]
+                            if(rectangularCollision({rectangle1: player, rectangle2: {...boundary, position: {
+                                x: boundary.position.x - 2,
+                                y: boundary.position.y
+                            }}})){
+                                player.moving = false
+                                break
+                            }
+                        }
+                        if(player.moving){
+                            if(!invert.x) movables.forEach(movable => {movable.position.x -= 2})
+                            else nonmovables.forEach(nonmovables => {nonmovables.position.x += 2})
+                            moves.right += 2
+                        }
+                    }
+                    else{
+                        face = { up: false, down: false, right: false, left: false };
+                        face.right = true
+                    }
+                    
+                }
+                else if (keyStack[keyStack.length-1] === 'a') {
+
+                    player.image = player.sprites.left
+
+                    if(face.left){
+                        for(let i=0; i<boundaries.length; i++){
+                            const boundary = boundaries[i]
+                            if(rectangularCollision({rectangle1: player, rectangle2: {...boundary, position: {
+                                x: boundary.position.x + 2,
+                                y: boundary.position.y
+                            }}})){
+                                player.moving = false
+                                break
+                            }
+                        }
+                        if(player.moving){
+                            if(!invert.x) movables.forEach(movable => {movable.position.x += 2})
+                            else nonmovables.forEach(nonmovables => {nonmovables.position.x -= 2})
+                            moves.left += 2
+                        }
+                    }
+                    else{
+                        face = { up: false, down: false, right: false, left: false };
+                        face.left = true
+                    }
+                    
+                }
+                else if (keyStack[keyStack.length-1] === 's') {
+
+                    player.image = player.sprites.down
+
+                    if(face.down){
+                        for(let i=0; i<boundaries.length; i++){
+                            const boundary = boundaries[i]
+                            if(rectangularCollision({rectangle1: player, rectangle2: {...boundary, position: {
+                                x: boundary.position.x,
+                                y: boundary.position.y - 2
+                            }}})){
+                                player.moving = false
+                                break
+                            }
+                        }
+                        if(player.moving){
+                            if(!invert.y) movables.forEach(movable => {movable.position.y -= 2})
+                            else nonmovables.forEach(nonmovables => {nonmovables.position.y += 2})
+                            moves.down += 2
+                        }
+                    }
+                    else{
+                        face = { up: false, down: false, right: false, left: false };
+                        face.down = true
+                    }
+                }
+            }
+        }
+        else if(moves.up > 0){
+            moves.up = (moves.up + 2) % 16
+            if(!invert.y) movables.forEach(movable => {movable.position.y += 2})
+            else nonmovables.forEach(nonmovable => {nonmovable.position.y -= 2})
+        }
+        else if(moves.down > 0){
+            moves.down = (moves.down + 2) % 16
+            if(!invert.y) movables.forEach(movable => {movable.position.y -= 2})
+            else nonmovables.forEach(nonmovables => {nonmovables.position.y += 2})
+        }
+        else if(moves.right > 0){
+            moves.right = (moves.right + 2) % 16
+            if(!invert.x) movables.forEach(movable => {movable.position.x -= 2})
+            else nonmovables.forEach(nonmovables => {nonmovables.position.x += 2})
+        }
+        else{
+            moves.left = (moves.left + 2) % 16
+            if(!invert.x) movables.forEach(movable => {movable.position.x += 2})
+            else nonmovables.forEach(nonmovables => {nonmovables.position.x -= 2})
+        }
+        if(frameSpeed != 0) frame++
     }
-
-    blackBackground.draw()
-    background.draw()
-    player.draw()
-    foreground.draw()
-
-
-    if(!invert.x && (background.position.x === canvas.width - background.width || background.position.x === 0)) invert.x = true
-    else if(invert.x && player.position.x === playerMidX) invert.x = false
-
-    if(!invert.y && (background.position.y === canvas.height - background.height || background.position.y === 0)) invert.y = true
-    else if(invert.y && player.position.y === playerMidY) invert.y = false
-
-    player.moving = false
-
-    if(keyStack.length != 0){
-
-        player.moving = true
-
-        if(keyStack[keyStack.length-1] === 'w'){
-
-            player.image = player.sprites.up
-
-            for(let i=0; i<boundaries.length; i++){
-                const boundary = boundaries[i]
-                if(rectangularCollision({rectangle1: player, rectangle2: {...boundary, position: {
-                    x: boundary.position.x,
-                    y: boundary.position.y + 2
-                }}})){
-                    player.moving = false
-                    break
-                }
-            }
-            if(player.moving){
-                if(!invert.y) movables.forEach(movable => {movable.position.y += 2})
-                else nonmovables.forEach(nonmovable => {nonmovable.position.y -= 2})
-            }
-        }
-        else if (keyStack[keyStack.length-1] === 'd') {
-
-            player.image = player.sprites.right
-
-            for(let i=0; i<boundaries.length; i++){
-                const boundary = boundaries[i]
-                if(rectangularCollision({rectangle1: player, rectangle2: {...boundary, position: {
-                    x: boundary.position.x - 2,
-                    y: boundary.position.y
-                }}})){
-                    player.moving = false
-                    break
-                }
-            }
-            if(player.moving){
-                if(!invert.x) movables.forEach(movable => {movable.position.x -= 2})
-                else nonmovables.forEach(nonmovables => {nonmovables.position.x += 2})
-            }
-        }
-        else if (keyStack[keyStack.length-1] === 'a') {
-
-            player.image = player.sprites.left
-
-            for(let i=0; i<boundaries.length; i++){
-                const boundary = boundaries[i]
-                if(rectangularCollision({rectangle1: player, rectangle2: {...boundary, position: {
-                    x: boundary.position.x + 2,
-                    y: boundary.position.y
-                }}})){
-                    player.moving = false
-                    break
-                }
-            }
-            if(player.moving){
-                if(!invert.x) movables.forEach(movable => {movable.position.x += 2})
-                else nonmovables.forEach(nonmovables => {nonmovables.position.x -= 2})
-            }
-        }
-        else if (keyStack[keyStack.length-1] === 's') {
-
-            player.image = player.sprites.down
-
-            for(let i=0; i<boundaries.length; i++){
-                const boundary = boundaries[i]
-                if(rectangularCollision({rectangle1: player, rectangle2: {...boundary, position: {
-                    x: boundary.position.x,
-                    y: boundary.position.y - 2
-                }}})){
-                    player.moving = false
-                    break
-                }
-            }
-            if(player.moving){
-                if(!invert.y) movables.forEach(movable => {movable.position.y -= 2})
-                else nonmovables.forEach(nonmovables => {nonmovables.position.y += 2})
-            }
-        }
-    }
+    else if(frame === frameSpeed) frame = 0
+    else frame++
 }
 
 animate()
@@ -250,6 +326,10 @@ window.addEventListener('keydown', (e) =>{
             keys.d.pressed = true
             if(keyStack.length != 0 || keyStack[keyStack.length-1] != 'd') keyStack.push('d');
             break
+        case 'z':
+            frame = 0
+            frameSpeed = 0
+            break
     }
 })
 
@@ -266,6 +346,10 @@ window.addEventListener('keyup', (e) =>{
             break
         case 'd':
             keys.d.pressed = false
+            break
+        case 'z':
+            frame = 0
+            frameSpeed = selectedPlayer.playerFrameSpeed
             break
     }
 })
